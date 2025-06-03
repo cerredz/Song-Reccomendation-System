@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-
+# Visualize a histogram of a column in the data
 def vis_hist(data, column_name):
     values = data[column_name]
     plt.hist(values, bins=20, edgecolor="black")
@@ -12,6 +12,7 @@ def vis_hist(data, column_name):
     plt.savefig(f"../visualizations/histograms/{column_name}")
     plt.close()
 
+# Visualize the correlation matrix between the numerical columns in the data
 def vis_corr_matrx(data, column_names):
     corr_matrix_data = data[column_names]
     corr_matrix = corr_matrix_data.corr()
@@ -44,8 +45,8 @@ if __name__ == "__main__":
         "Good for Morning Routine"
     ]
 
-    #for feature in num_features:
-    #    vis_hist(data, feature)
+    for feature in num_features:
+        vis_hist(data, feature)
 
     vis_corr_matrx(data, num_features)
 
