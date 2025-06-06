@@ -102,7 +102,7 @@ if __name__ == "__main__":
     data, artist_count, genre_count, emotion_count = process_non_num_features(data)
 
     # filter out all data that we do not need
-    data = data.drop(columns=["text", "Length", "Album", "Release Date", "Key", "Time signature", "Explicit", "Good for Yoga/Stretching", "Good for Relaxation/Meditation", "Similar Artist 1", "Similar Song 1", "Similarity Score 1", "Similar Artist 2", "Similar Song 2", "Similarity Score 2", "Similar Artist 3", "Similar Song 3", "Similarity Score 3", "Artist(s)", "song", "emotion", "Genre"])
+    data = data.drop(columns=["text", "Length", "Album", "Release Date", "Key", "Loudness (db)", "Time signature", "Explicit", "Good for Yoga/Stretching", "Good for Relaxation/Meditation", "Similar Artist 1", "Similar Song 1", "Similarity Score 1", "Similar Artist 2", "Similar Song 2", "Similarity Score 2", "Similar Artist 3", "Similar Song 3", "Similarity Score 3", "Artist(s)", "song", "emotion", "Genre"])
     
     # save pre-processed data to a csv file
     data.to_csv("../data/pre-processed-data.csv", index=False)
