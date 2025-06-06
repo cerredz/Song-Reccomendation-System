@@ -1,4 +1,5 @@
 import pandas as pd
+import tensorflow as tf
 from tensorflow.keras.layers import Embedding
 from tensorflow.keras import layers, Model
 from pandas import DataFrame
@@ -29,15 +30,32 @@ def build_autoencoder(num_features, num_artists, num_genres, num_emotions, embed
     embedding_dim_genre=25, embedding_dim_emotion=25,latent_dim=22):
 
     # Define inputs
-    input_numerical = layers.Input(shape=(num_features), name="numerical_input")
-    input_artist = layers.Input(shape=(num_artists), name="artist_input")
-    input_genre = layers.Input(shape=(num_genres), name="genre_input")
-    input_emotion = layers.Input(shape=(num_emotions), name="emotion_input")
+    input_numerical = layers.Input(shape=(num_features + 1), name="numerical_input")
+    input_artist = layers.Input(shape=(1,), name="artist_input", dtype=tf.int32)
+    input_genre = layers.Input(shape=(1,), name="genre_input", dtype=tf.int32)
+    input_emotion = layers.Input(shape=(1,), name="emotion_input", dtype=tf.int32)
+
+    # Create embedding layers
+    artist_embedding = layers.Embedding(num_artists + 1, embedding_dim_artist, name="artist_embedding")(input_artist)
+    artist_embedding = layers.Flatten()(artist_embedding)
+
+    genre_embedding = layers.Embedding(num_genres + 1, embedding_dim_genre, name="genre_embedding")(input_genre)
+    genre_embedding = layers.Flatten()(genre_embedding)
+
+    emotion_embedding = layers.Embedding(num_emotions + 1, embedding_dim_emotion, name="emotion_embedding")(input_emotion)
+    emotion_embedding = layers.Flatten()(emotion_embedding)
+
+    # concatenate inputs
+
+
+
 
     return 0
 
 if __name__ == "__main__":
+    num_features = 18
     df, embedding_data = load_preprocessed_data()
+    print(df)
     num_artists, num_genres, num_emotions = get_training_data_stats(df)
 
 
