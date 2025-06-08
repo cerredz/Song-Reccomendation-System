@@ -110,7 +110,7 @@ def visualize_latent_space(encoder_model, test_data, embedding_data_test=None, m
 
     # color by emotion
     scatter3 = axis[0,2].scatter(latent_2d[:,0], latent_2d[:,1], c=test_emotion.flatten(), cmap="tab10", alpha=.8, s=20)
-    axis[0,2].set_title("Colored by Artist")
+    axis[0,2].set_title("Colored by Emotion")
     axis[0,2].set_xlabel("Latent Dimension 1")
     axis[0,2].set_ylabel("Latent Dimension 2")
 
@@ -118,8 +118,6 @@ def visualize_latent_space(encoder_model, test_data, embedding_data_test=None, m
     
     plt.tight_layout()
     plt.savefig(save_path, dpi=300, bbox_inches="tight")
-
-
 
 if __name__ == "__main__":
     data = load_data(p_col_names=False, max_rows=50000)

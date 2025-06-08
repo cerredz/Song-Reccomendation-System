@@ -6,6 +6,7 @@ from pandas import DataFrame
 import numpy as np
 from sklearn.model_selection import train_test_split
 from visualize import plot_training_history, visualize_latent_space
+from models import save_model
 
 # load the pre-processed data
 def load_preprocessed_data():
@@ -26,6 +27,8 @@ def get_training_data_stats(df: DataFrame):
     num_genres = counts[1] + 1
     num_emotions = counts[2] + 1
 
+    print(num_artists, num_genres, num_emotions)
+    
     return num_artists, num_genres, num_emotions
 
 # Prepares the pre-processed data to be inputted into the autoencoder
@@ -156,7 +159,9 @@ if __name__ == "__main__":
     # build, train, and evaluate the autoencoder
     autoencoder, encoder_model = build_autoencoder(num_features=num_features, num_artists=num_artists,num_emotions=num_emotions, num_genres=num_genres)
     
-    history = train_autoencoder(autoencoder, num_cols, train_data, val_data, test_data, epochs=50)
+    print(autoencoder.summary())
+
+    history = train_autoencoder(autoencoder, num_cols, train_data, val_data, test_data, epochs=40)
 
     test_loss, predictions, test_target = evaluate_autoencoder(autoencoder, test_data)
 
@@ -164,6 +169,9 @@ if __name__ == "__main__":
     visualize_latent_space(encoder_model, test_data, method="tsne", save_path="../visualizations/training/latent-space.png")
 
     plot_training_history(history)
+
+    # save the model for future use
+    save_model(autoencoder, encoder_model)
 
 
     

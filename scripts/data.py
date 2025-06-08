@@ -35,8 +35,12 @@ def process_non_num_features(data):
     artists = data["Artist(s)"]
     genres = data["Genre"]
     emotions = data["emotion"]
-    artist_mapping = genre_mapping = emotion_mapping = {}
-    artist_count = genre_count = emotion_count = 1
+
+    artist_mapping = {}
+    genre_mapping = {}
+    emotion_mapping = {}
+
+    artist_count = genre_count = emotion_count = 0
 
     # artists
     for art_list in artists:
@@ -67,7 +71,7 @@ def process_non_num_features(data):
     )
 
     data["Emotion_IDS"] = data["emotion"].apply(
-        lambda x: genre_mapping.get(x.split(",")[0].strip().lower() if x else "unknown", 0)
+        lambda x: emotion_mapping.get(x.split(",")[0].strip().lower() if x else "unknown", 0)
     )
 
     return data, artist_count, genre_count, emotion_count
@@ -89,7 +93,7 @@ def get_num_features():
 
 if __name__ == "__main__":
     start = time.time()
-    n_rows = 10000
+    n_rows = 50000
     pd.set_option('display.max_rows', None)  
     pd.set_option('display.max_columns', None)
     # load data
