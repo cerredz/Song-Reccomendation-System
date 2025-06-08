@@ -161,9 +161,7 @@ if __name__ == "__main__":
     test_loss, predictions, test_target = evaluate_autoencoder(autoencoder, test_data)
 
     # Visualize the results
-    visualize_latent_space(encoder_model, test_data, color_by="genre", method="tsne", save_path="../visualizations/training/genre-latent.png")
-    visualize_latent_space(encoder_model, test_data, color_by="artist", method="tsne", save_path="../visualizations/training/artist-latent.png")
-    visualize_latent_space(encoder_model, test_data, color_by="emotion", method="tsne", save_path="../visualizations/training/emotion-latent.png")
+    visualize_latent_space(encoder_model, test_data, method="tsne", save_path="../visualizations/training/latent-space.png")
 
     plot_training_history(history)
 

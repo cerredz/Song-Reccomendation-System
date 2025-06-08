@@ -76,7 +76,7 @@ def plot_training_history(history, save_path="../visualizations/training/trainin
     
 # Visualize the latent space to see if we have clusters of data
 def visualize_latent_space(encoder_model, test_data, embedding_data_test=None, method='pca', 
-                          color_by='genre', save_path="../visualizations/latent_space.png"):
+                           save_path="../visualizations/latent_space.png"):
     test_num, test_artist, test_genre, test_emotion = test_data
     latent_representation = encoder_model.predict([test_num, test_artist, test_genre, test_emotion])
     
@@ -89,38 +89,36 @@ def visualize_latent_space(encoder_model, test_data, embedding_data_test=None, m
         latent_2d = reducer.fit_transform(latent_representation)
         title_suffix = "(t-SNE)"
 
-    plt.figure(figsize=(10,10))
+    fig, axis = plt.subplots(2,3, figsize=(18,12))
+    fig.suptitle(f'Latent Space Visualization {title_suffix}', fontsize=16)
 
-    if color_by is not None:
-        if color_by == "genre":
-            colors = test_genre.flatten()
-            colors_label = "Genre ID"
-        elif color_by == "artist":
-            colors = test_artist.flatten()
-            colors_label = "Artist ID"
-        elif color_by == "emotion":
-            colors = test_emotion.flatten()
-            colors_label = "Emotion ID"
-        else:
-            colors = None
-            colors_label = None
-        
-        if colors is not None:
-            scatter = plt.scatter(latent_2d[:, 0], latent_2d[:, 1], 
-                                c=colors, cmap='tab10', alpha=0.6, s=20)
-            plt.colorbar(scatter, label=colors_label)
-        else:
-            plt.scatter(latent_2d[:, 0], latent_2d[:, 1], alpha=0.6, s=20)
-    else:
-        plt.scatter(latent_2d[:, 0], latent_2d[:, 1], alpha=0.6, s=20)
-    
-    plt.xlabel('Latent Dimension 1')
-    plt.ylabel('Latent Dimension 2')
-    plt.title(f'Autoencoder Latent Space Visualization {title_suffix}')
-    plt.grid(True, alpha=0.3)
+    # color by genre
+    scatter1 = axis[0,0].scatter(latent_2d[:,0], latent_2d[:,1], c=test_genre.flatten(), cmap="tab10", alpha=.8, s=20)
+    axis[0,0].set_title("Colored by Genre")
+    axis[0,0].set_xlabel("Latent Dimension 1")
+    axis[0,0].set_ylabel("Latent Dimension 2")
+
+    plt.colorbar(scatter1, ax=axis[0,0], label="Genre ID")
+
+    # color by artist
+    scatter2 = axis[0,1].scatter(latent_2d[:,0], latent_2d[:,1], c=test_artist.flatten(), cmap="viridis", alpha=.8, s=20)
+    axis[0,1].set_title("Colored by Artist")
+    axis[0,1].set_xlabel("Latent Dimension 1")
+    axis[0,1].set_ylabel("Latent Dimension 2")
+
+    plt.colorbar(scatter2, ax=axis[0,1], label="Artist ID")
+
+    # color by emotion
+    scatter3 = axis[0,2].scatter(latent_2d[:,0], latent_2d[:,1], c=test_emotion.flatten(), cmap="tab10", alpha=.8, s=20)
+    axis[0,2].set_title("Colored by Artist")
+    axis[0,2].set_xlabel("Latent Dimension 1")
+    axis[0,2].set_ylabel("Latent Dimension 2")
+
+    plt.colorbar(scatter3, ax=axis[0,2], label="Emotion ID")
     
     plt.tight_layout()
-    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    plt.savefig(save_path, dpi=300, bbox_inches="tight")
+
 
 
 if __name__ == "__main__":
