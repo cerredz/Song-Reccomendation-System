@@ -5,7 +5,7 @@ from tensorflow.keras import layers, Model
 from pandas import DataFrame
 import numpy as np
 from sklearn.model_selection import train_test_split
-from visualize import plot_training_history
+from visualize import plot_training_history, visualize_latent_space
 
 # load the pre-processed data
 def load_preprocessed_data():
@@ -138,6 +138,7 @@ def evaluate_autoencoder(autoencoder, test_data, batch_size=32):
 
     return test_loss, predictions, test_target
 
+
 if __name__ == "__main__":
 
     # number of input features
@@ -158,6 +159,11 @@ if __name__ == "__main__":
     history = train_autoencoder(autoencoder, num_cols, train_data, val_data, test_data, epochs=50)
 
     test_loss, predictions, test_target = evaluate_autoencoder(autoencoder, test_data)
+
+    # Visualize the results
+    visualize_latent_space(encoder_model, test_data, color_by="genre", method="tsne", save_path="../visualizations/training/genre-latent.png")
+    visualize_latent_space(encoder_model, test_data, color_by="artist", method="tsne", save_path="../visualizations/training/artist-latent.png")
+    visualize_latent_space(encoder_model, test_data, color_by="emotion", method="tsne", save_path="../visualizations/training/emotion-latent.png")
 
     plot_training_history(history)
 
