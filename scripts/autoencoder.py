@@ -5,6 +5,7 @@ from tensorflow.keras import layers, Model
 from pandas import DataFrame
 import numpy as np
 from sklearn.model_selection import train_test_split
+from visualize import plot_training_history
 
 # load the pre-processed data
 def load_preprocessed_data():
@@ -154,15 +155,13 @@ if __name__ == "__main__":
     # build, train, and evaluate the autoencoder
     autoencoder, encoder_model = build_autoencoder(num_features=num_features, num_artists=num_artists,num_emotions=num_emotions, num_genres=num_genres)
     
-    history = train_autoencoder(autoencoder, num_cols, train_data, val_data, test_data)
+    history = train_autoencoder(autoencoder, num_cols, train_data, val_data, test_data, epochs=50)
 
     test_loss, predictions, test_target = evaluate_autoencoder(autoencoder, test_data)
 
-    print("test losd", test_loss )
+    plot_training_history(history)
 
-    print("predictions", predictions)
 
-    print("test target", test_target)
     
 
 
