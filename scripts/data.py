@@ -1,6 +1,7 @@
 import pandas as pd
 from pprint import pprint
 import time
+import json
 
 def load_data(p_col_names: bool, max_rows: int):
     data = pd.read_csv("../data/spotify_dataset.csv", nrows=max_rows)
@@ -74,7 +75,19 @@ def process_non_num_features(data):
         lambda x: emotion_mapping.get(x.split(",")[0].strip().lower() if x else "unknown", 0)
     )
 
+    # save the dictionaries to files
+    with open("../data/artist-json.json", "w") as json_file:
+        json.dump(artist_mapping, json_file, indent=4)
+    
+    with open("../data/genre-json.json", "w") as json_file:
+        json.dump(genre_mapping, json_file, indent=4)
+    
+    with open("../data/emotion-json.json", "w") as json_file:
+        json.dump(emotion_mapping, json_file, indent=4)
+
     return data, artist_count, genre_count, emotion_count
+
+
     
 
 def get_num_features():

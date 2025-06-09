@@ -1,14 +1,20 @@
 from models import load_saved_model
 import pandas as pd
 import sys
+import json
 
 class Recommender():
     autoencoder, encoding_model = load_saved_model()
-    lookup_table = {}
+    latent_dict = {}
+    age_dict = {}
 
     def __init__(self):
-        if not Recommender.lookup_table:
-            Recommender.lookup_table = self.create_latent_lookup_table()
+        if not Recommender.latent_dict:
+            Recommender.latent_dict = self.create_latent_lookup_table()
+
+        if not Recommender.age_dict:
+            Recommender.age_dict = self.create_age_dict()
+            print(Recommender.age_dict)
 
     # Creates a lookup table based on our 32D latent space
     def create_latent_lookup_table(self):
@@ -57,17 +63,34 @@ class Recommender():
         
         print(f"Created lookup table with {len(table)} entries")
         return table
+    
+
+    # creates the age (artist, genre, emotion) dict (corresponding values to each a.g.e we used during training)
+    def create_age_dict(self):
+        age_dict = {}
+
+        with open("../data/artist-json.json") as json_file:
+            artist_data = json.load(json_file)
+            age_dict["artist"] = artist_data
+        
+        with open("../data/genre-json.json") as json_file:
+            genre_data = json.load(json_file)
+            age_dict["genre"] = genre_data
+        
+        with open("../data/emotion-json.json") as json_file:
+            emotion_data = json.load(json_file)
+            age_dict["emotion"] = emotion_data
+        
+        return age_dict
+
+    # Recommends a certain number of songs based on the input
+    def recommend_song(self, n, data):
+        pass
+
+
 
 if __name__ == "__main__":
     recommender = Recommender()
-    
-    i = 0
-    for key, value in Recommender.lookup_table.items():
-        print("Key: ", key)
-        print("Value: ", value)
-        i += 1
-        if i is 1:
-            break
 
 
 
