@@ -89,32 +89,32 @@ def visualize_latent_space(encoder_model, test_data, embedding_data_test=None, m
         latent_2d = reducer.fit_transform(latent_representation)
         title_suffix = "(t-SNE)"
 
-    fig, axis = plt.subplots(2,3, figsize=(18,12))
+    fig, axis = plt.subplots(1,3, figsize=(18,9))
     fig.suptitle(f'Latent Space Visualization {title_suffix}', fontsize=16)
 
     # color by genre
-    scatter1 = axis[0,0].scatter(latent_2d[:,0], latent_2d[:,1], c=test_genre.flatten(), cmap="tab10", alpha=.8, s=20)
-    axis[0,0].set_title("Colored by Genre")
-    axis[0,0].set_xlabel("Latent Dimension 1")
-    axis[0,0].set_ylabel("Latent Dimension 2")
+    scatter1 = axis[0].scatter(latent_2d[:,0], latent_2d[:,1], c=test_genre.flatten(), cmap="tab10", alpha=.8, s=20)
+    axis[0].set_title("Colored by Genre")
+    axis[0].set_xlabel("Latent Dimension 1")
+    axis[0].set_ylabel("Latent Dimension 2")
 
-    plt.colorbar(scatter1, ax=axis[0,0], label="Genre ID")
+    plt.colorbar(scatter1, ax=axis[0], label="Genre ID")
 
     # color by artist
-    scatter2 = axis[0,1].scatter(latent_2d[:,0], latent_2d[:,1], c=test_artist.flatten(), cmap="viridis", alpha=.8, s=20)
-    axis[0,1].set_title("Colored by Artist")
-    axis[0,1].set_xlabel("Latent Dimension 1")
-    axis[0,1].set_ylabel("Latent Dimension 2")
+    scatter2 = axis[1].scatter(latent_2d[:,0], latent_2d[:,1], c=test_artist.flatten(), cmap="viridis", alpha=.8, s=20)
+    axis[1].set_title("Colored by Artist")
+    axis[1].set_xlabel("Latent Dimension 1")
+    axis[1].set_ylabel("Latent Dimension 2")
 
-    plt.colorbar(scatter2, ax=axis[0,1], label="Artist ID")
+    plt.colorbar(scatter2, ax=axis[1], label="Artist ID")
 
     # color by emotion
-    scatter3 = axis[0,2].scatter(latent_2d[:,0], latent_2d[:,1], c=test_emotion.flatten(), cmap="tab10", alpha=.8, s=20)
-    axis[0,2].set_title("Colored by Emotion")
-    axis[0,2].set_xlabel("Latent Dimension 1")
-    axis[0,2].set_ylabel("Latent Dimension 2")
+    scatter3 = axis[2].scatter(latent_2d[:,0], latent_2d[:,1], c=test_emotion.flatten(), cmap="tab10", alpha=.8, s=20)
+    axis[2].set_title("Colored by Emotion")
+    axis[2].set_xlabel("Latent Dimension 1")
+    axis[2].set_ylabel("Latent Dimension 2")
 
-    plt.colorbar(scatter3, ax=axis[0,2], label="Emotion ID")
+    plt.colorbar(scatter3, ax=axis[2], label="Emotion ID")
     
     plt.tight_layout()
     plt.savefig(save_path, dpi=300, bbox_inches="tight")
