@@ -15,9 +15,9 @@ def save_model_weights(autoencoder, encoding_model):
 def load_saved_model():
 
     autoencoder = tf.keras.models.load_model("../models/autoencoder-model.keras")
-    encoding_model = tf.keras.models.load_model("../models/encoder-model.keras")
+    encoder_model = tf.keras.models.load_model("../models/encoder-model.keras")
 
-    return autoencoder, encoding_model
+    return autoencoder, encoder_model
 
 # Load and return the saved weights from previous training session
 def load_saved_weights():

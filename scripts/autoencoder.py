@@ -125,6 +125,8 @@ def train_autoencoder(autoencoder, num_cols, train_data, val_data, test_data, ep
 def evaluate_autoencoder(autoencoder, test_data, batch_size=32):
     test_num, test_artist, test_genre, test_emotion = test_data
 
+    print(test_num, test_artist, test_genre, test_emotion)
+
     test_target = np.concatenate([test_num,
                                   autoencoder.get_layer("artist_embedding")(test_artist),
                                   autoencoder.get_layer("genre_embedding")(test_genre),
