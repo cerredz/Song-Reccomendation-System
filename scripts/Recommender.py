@@ -220,5 +220,6 @@ if __name__ == "__main__":
     latent_space = recommender.generate_latent_space(n=5, data=sample_data)
     similiar = recommender.get_similiar_latent_space(latent_space, 15)
     similiar_scores = [score["score"] for score in similiar]
+    print([score["metadata"]["artist"] for score in similiar])
     print(similiar_scores)
     

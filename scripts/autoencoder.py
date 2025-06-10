@@ -170,7 +170,7 @@ if __name__ == "__main__":
     
     print(autoencoder.summary())
 
-    history = train_autoencoder(autoencoder, num_cols, train_data, val_data, test_data, epochs=50, batch_size=batch_size)
+    history = train_autoencoder(autoencoder, num_cols, train_data, val_data, test_data, epochs=10, batch_size=batch_size)
 
     test_loss, predictions, test_target = evaluate_autoencoder(autoencoder, test_data, batch_size=batch_size)
 
