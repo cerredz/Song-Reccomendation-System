@@ -8,6 +8,11 @@ from sklearn.model_selection import train_test_split
 from visualize import plot_training_history, visualize_latent_space
 from models import save_model
 
+print("Tensorflow Version: ", tf.__version__)
+print("Physical GPU Devices:", tf.config.list_physical_devices('GPU'))
+if not tf.config.list_physical_devices('GPU'):
+    print("WARNING: No GPU detected, training on CPU")
+
 # load the pre-processed data
 def load_preprocessed_data():
     df = pd.read_csv("../data/pre-processed-data.csv", delimiter=",", encoding="utf-8")
@@ -26,8 +31,6 @@ def get_training_data_stats(df: DataFrame):
     num_artists = counts[0] + 1
     num_genres = counts[1] + 1
     num_emotions = counts[2] + 1
-
-    print(num_artists, num_genres, num_emotions)
     
     return num_artists, num_genres, num_emotions
 
@@ -55,8 +58,8 @@ def prepare_data(df, embedding_data):
     return num_cols, train_data, val_data, test_data
 
 # buidl the autoenc
-def build_autoencoder(num_features, num_artists, num_genres, num_emotions, embedding_dim_artist=50, 
-    embedding_dim_genre=25, embedding_dim_emotion=25,latent_dim=32):
+def build_autoencoder(num_features, num_artists, num_genres, num_emotions, embedding_dim_artist=100, 
+    embedding_dim_genre=50, embedding_dim_emotion=25, latent_dim=20):
 
     # Define inputs
     input_numerical = layers.Input(shape=(num_features,), name="numerical_input")
@@ -97,49 +100,52 @@ def build_autoencoder(num_features, num_artists, num_genres, num_emotions, embed
     return autoencoder, encoder_model
 
 # trains the autoencoder on our traing and test data
-def train_autoencoder(autoencoder, num_cols, train_data, val_data, test_data, epochs=20, batch_size=32):
+def train_autoencoder(autoencoder, num_cols, train_data, val_data, test_data, epochs=20, batch_size=256):
 
     train_num, train_artist, train_genre, train_emotion = train_data
     val_num, val_artist, val_genre, val_emotion = val_data
+
+    print("Training on device:", tf.test.gpu_device_name() or "CPU")
+    print(f"Training with batch size={batch_size}, epochs={epochs}")
     
-    history = autoencoder.fit(
-        x=[train_num, train_artist, train_genre, train_emotion],
-        y=np.concatenate([train_num, 
-                          autoencoder.get_layer("artist_embedding")(train_artist), 
-                          autoencoder.get_layer("genre_embedding")(train_genre), 
-                          autoencoder.get_layer("emotion_embedding")(train_emotion)], axis=1),
-        validation_data=([val_num, val_artist, val_genre, val_emotion], 
-                         np.concatenate([val_num, 
-                                        autoencoder.get_layer("artist_embedding")(val_artist), 
-                                        autoencoder.get_layer("genre_embedding")(val_genre), 
-                                        autoencoder.get_layer("emotion_embedding")(val_emotion)], axis=1)),
-        epochs=epochs,
-        batch_size=batch_size,
-        verbose=1,
-        callbacks=[tf.keras.callbacks.EarlyStopping(patience=3, restore_best_weights=True)]
-    )
+    with tf.device('/GPU:0'):
+        history = autoencoder.fit(
+            x=[train_num, train_artist, train_genre, train_emotion],
+            y=np.concatenate([train_num, 
+                              autoencoder.get_layer("artist_embedding")(train_artist), 
+                              autoencoder.get_layer("genre_embedding")(train_genre), 
+                              autoencoder.get_layer("emotion_embedding")(train_emotion)], axis=1),
+            validation_data=([val_num, val_artist, val_genre, val_emotion], 
+                             np.concatenate([val_num, 
+                                            autoencoder.get_layer("artist_embedding")(val_artist), 
+                                            autoencoder.get_layer("genre_embedding")(val_genre), 
+                                            autoencoder.get_layer("emotion_embedding")(val_emotion)], axis=1)),
+            epochs=epochs,
+            batch_size=batch_size,
+            verbose=1,
+            callbacks=[tf.keras.callbacks.EarlyStopping(patience=3, restore_best_weights=True)]
+        )
 
     return history
 
 # Tests the autoencoder with the test data
-def evaluate_autoencoder(autoencoder, test_data, batch_size=32):
+def evaluate_autoencoder(autoencoder, test_data, batch_size=256):
     test_num, test_artist, test_genre, test_emotion = test_data
-
-    print(test_num, test_artist, test_genre, test_emotion)
 
     test_target = np.concatenate([test_num,
                                   autoencoder.get_layer("artist_embedding")(test_artist),
                                   autoencoder.get_layer("genre_embedding")(test_genre),
                                   autoencoder.get_layer("emotion_embedding")(test_emotion)], axis=1)
     
-    test_loss = autoencoder.evaluate(
-        x=[test_num, test_artist, test_genre, test_emotion],
-        y=[test_target],
-        batch_size=batch_size,
-        verbose=0
-    )
+    with tf.device("/GPU:0"):
+        test_loss = autoencoder.evaluate(
+            x=[test_num, test_artist, test_genre, test_emotion],
+            y=[test_target],
+            batch_size=batch_size,
+            verbose=0
+        )
 
-    predictions = autoencoder.predict([test_num, test_artist, test_genre, test_emotion])
+        predictions = autoencoder.predict([test_num, test_artist, test_genre, test_emotion])
 
     return test_loss, predictions, test_target
 
@@ -148,6 +154,7 @@ if __name__ == "__main__":
 
     # number of input features
     num_features = 17
+    batch_size = 16384
 
     # load pre-processed data
     df, embedding_data = load_preprocessed_data()
@@ -163,17 +170,19 @@ if __name__ == "__main__":
     
     print(autoencoder.summary())
 
-    history = train_autoencoder(autoencoder, num_cols, train_data, val_data, test_data, epochs=20)
+    history = train_autoencoder(autoencoder, num_cols, train_data, val_data, test_data, epochs=50, batch_size=batch_size)
 
-    test_loss, predictions, test_target = evaluate_autoencoder(autoencoder, test_data)
+    test_loss, predictions, test_target = evaluate_autoencoder(autoencoder, test_data, batch_size=batch_size)
 
     # Visualize the results
-    visualize_latent_space(encoder_model, test_data, method="tsne", save_path="../visualizations/training/latent-space.png")
+    #visualize_latent_space(encoder_model, test_data, method="tsne", save_path="../visualizations/training/latent-space.png")
 
-    plot_training_history(history)
+    #plot_training_history(history)
 
     # save the model for future use
     save_model(autoencoder, encoder_model)
+
+    print("Successfully trained and saved the model.")
 
 
     

@@ -28,10 +28,8 @@ class Recommender():
 
         data = pd.read_csv("../data/latent-space-lookup.csv", delimiter=",") 
         
-        # Much faster vectorized approach
-        # Extract all latent columns at once (assuming 32 dimensions: latent_0 to latent_31)
-        latent_cols = [f"latent_{i}" for i in range(32)]
-        latent_data = data[latent_cols].values  # Convert to numpy array
+        latent_cols = [f"latent_{i}" for i in range(20)]  
+        latent_data = data[latent_cols].values 
         
         # Create tuples from each row (vectorized)
         latent_tuples = [tuple(row) for row in latent_data]
@@ -162,18 +160,16 @@ class Recommender():
             latent_key = [float(x) for x in key]
             cosine_similarity_score = self.get_cosine_similiarity([latent_key], [latent_space])
             
-            if cosine_similarity_score > 0.6:  # Only consider items above threshold
+            if cosine_similarity_score > 0.3:  # Only consider items above threshold
                 print(cosine_similarity_score)
                 if len(min_heap) < n:
                     # Heap not full, just add the item
                     heapq.heappush(min_heap, (cosine_similarity_score, value))
                 elif cosine_similarity_score > min_heap[0][0]:
                     # New score is better than the worst in our top-n
-                    # Remove the worst and add the new one
                     heapq.heapreplace(min_heap, (cosine_similarity_score, value))
         
         # Convert heap to sorted list (highest scores first)
-        # Since it's a min heap, we need to sort in descending order
         results = sorted(min_heap, key=lambda x: x[0], reverse=True)
         
         # Return as list of dictionaries with score and metadata
@@ -185,35 +181,44 @@ class Recommender():
         similiarity = similiarity_matrix[0][0]
         return similiarity
 
+# Returns the default function for input data
+def get_default_data(self):
+    return {
+        "artist": "unknown",
+        "genre": "unknown",
+        "emotion": "unknown",
+        "num": 0.0
+    }
+
 if __name__ == "__main__":
     recommender = Recommender()
     
-    # Sample data for testing
+    # Sample data for testing - designed to match popular songs for high similarity
     sample_data = {
-        "tempo": 120.5,
-        "popularity": 40,
-        "energy": 83,
-        "danceability": 50 ,
-        "positiveness": 80,
-        "speechiness": 0.1,
-        "liveness": 80,
-        "acousticness": 60,
-        "instrumentalness": 40,
-        "good_for_party": 1,
-        "good_for_work_study": 0,
-        "good_for_exercise": 1,
-        "good_for_running": 1,
-        "good_for_driving": 0,
-        "good_for_social_gatherings": 1,
-        "good_for_morning_routine": 0,
-        "good_for_meditation_stretching": 0,
-        "artist": "Taylor Swift",
-        "genre": "pop",
-        "emotion": "happy"
+        "tempo": 120,  # Within range (31-200), a common tempo for hip hop/rap tracks
+        "popularity": 85,  # High popularity (0-100), typical for Drake's chart-topping hits
+        "energy": 70,  # Moderate to high energy (0-100), common for rap/hip hop
+        "danceability": 80,  # High danceability (6-99), as Drake's songs often have strong beats
+        "positiveness": 50,  # Neutral to slightly positive valence (0-100), reflecting a mix of emotions in his music
+        "speechiness": 20,  # Moderate speechiness (2-97), as his songs often feature rapping
+        "liveness": 30,  # Moderate liveness (1-100), suggesting some live feel or crowd energy
+        "acousticness": 20,  # Low to moderate acousticness (0-100), as his music is often produced with electronic elements
+        "instrumentalness": 0,  # Not instrumental (0-100), typical for vocal-heavy tracks
+        "good_for_party": 1,  # Suitable for parties (0-2), common for his upbeat tracks
+        "good_for_work_study": 0,  # Not for work/study (0-2)
+        "good_for_exercise": 1,  # Suitable for exercise (0-2), due to high energy
+        "good_for_running": 1,  # Suitable for running (0-2), due to tempo and energy
+        "good_for_driving": 1,  # Suitable for driving (0-2), as his music is often played in cars
+        "good_for_social_gatherings": 1,  # Suitable for social events (0-2)
+        "good_for_morning_routine": 0,  # Not for morning routine (0-2)
+        "good_for_meditation_stretching": 0,  # Not for meditation (0-2)
+        "artist": "drake",  # Popular artist, ID 250 in artist-json.json, likely to have many similar songs
+        "genre": "hip hop",  # Common genre for Drake, ID 0 in genre-json.json
+        "emotion": "joy"  # Common emotion for some of Drake's popular tracks, ID 1 in emotion-json.json
     }
     
-    # Call the function
-    print("Testing generate_latent_space with sample data:")
     latent_space = recommender.generate_latent_space(n=5, data=sample_data)
-    recommender.get_similiar_latent_space(latent_space, 2)
+    similiar = recommender.get_similiar_latent_space(latent_space, 15)
+    similiar_scores = [score["score"] for score in similiar]
+    print(similiar_scores)
     

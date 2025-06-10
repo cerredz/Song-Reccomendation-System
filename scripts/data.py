@@ -6,6 +6,9 @@ import json
 def load_data(p_col_names: bool, max_rows: int):
     data = pd.read_csv("../data/spotify_dataset.csv", nrows=max_rows)
     data = data.dropna()
+
+    print(data.size)
+    print(data.shape)
     
     if p_col_names:
         print("Column Names:")
@@ -110,7 +113,7 @@ def get_num_features():
 
 if __name__ == "__main__":
     start = time.time()
-    n_rows = 300000
+    n_rows = 10000000
     pd.set_option('display.max_rows', None)  
     pd.set_option('display.max_columns', None)
     # load data
