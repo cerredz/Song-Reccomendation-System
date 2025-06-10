@@ -110,7 +110,7 @@ def get_num_features():
 
 if __name__ == "__main__":
     start = time.time()
-    n_rows = 10000
+    n_rows = 300000
     pd.set_option('display.max_rows', None)  
     pd.set_option('display.max_columns', None)
     # load data

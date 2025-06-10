@@ -3,6 +3,8 @@ import pandas as pd
 import sys
 import json
 import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
+import heapq
 
 class Recommender():
     autoencoder, encoder_model = load_saved_model()
@@ -141,8 +143,6 @@ class Recommender():
         genre_value = 0 if data["genre"] is None else Recommender.age_dict["genre"].get(data["genre"].lower(), 0) 
         emotion_value = 0 if data["emotion"] is None else Recommender.age_dict["emotion"].get(data["emotion"], 0)
 
-        print("num data", num_data)
-
         # run the model with the properly formatted input data
         num_data_array = np.array([num_data]) 
         artist_array = np.array([artist_value])  
@@ -155,12 +155,35 @@ class Recommender():
         return predictions[0]
     
     # Find similiar latent spaces to a given latent space
-    def get_similiar_latent_space(self, latent_space):
-
+    def get_similiar_latent_space(self, latent_space, n):
+        min_heap = []
+        
         for key, value in Recommender.latent_dict.items():
-            print(key)
-    
-    
+            latent_key = [float(x) for x in key]
+            cosine_similarity_score = self.get_cosine_similiarity([latent_key], [latent_space])
+            
+            if cosine_similarity_score > 0.6:  # Only consider items above threshold
+                print(cosine_similarity_score)
+                if len(min_heap) < n:
+                    # Heap not full, just add the item
+                    heapq.heappush(min_heap, (cosine_similarity_score, value))
+                elif cosine_similarity_score > min_heap[0][0]:
+                    # New score is better than the worst in our top-n
+                    # Remove the worst and add the new one
+                    heapq.heapreplace(min_heap, (cosine_similarity_score, value))
+        
+        # Convert heap to sorted list (highest scores first)
+        # Since it's a min heap, we need to sort in descending order
+        results = sorted(min_heap, key=lambda x: x[0], reverse=True)
+        
+        # Return as list of dictionaries with score and metadata
+        return [{"score": score, "metadata": metadata} for score, metadata in results]
+
+    # Helper function, used to determine the cosine similiarity between two arrays
+    def get_cosine_similiarity(self, x, y):
+        similiarity_matrix = cosine_similarity(x, y)
+        similiarity = similiarity_matrix[0][0]
+        return similiarity
 
 if __name__ == "__main__":
     recommender = Recommender()
@@ -168,14 +191,14 @@ if __name__ == "__main__":
     # Sample data for testing
     sample_data = {
         "tempo": 120.5,
-        "popularity": 75,
-        "energy": 0.8,
-        "danceability": 0.7,
-        "positiveness": 0.6,
+        "popularity": 40,
+        "energy": 83,
+        "danceability": 50 ,
+        "positiveness": 80,
         "speechiness": 0.1,
-        "liveness": 0.2,
-        "acousticness": 0.3,
-        "instrumentalness": 0.05,
+        "liveness": 80,
+        "acousticness": 60,
+        "instrumentalness": 40,
         "good_for_party": 1,
         "good_for_work_study": 0,
         "good_for_exercise": 1,
@@ -192,14 +215,5 @@ if __name__ == "__main__":
     # Call the function
     print("Testing generate_latent_space with sample data:")
     latent_space = recommender.generate_latent_space(n=5, data=sample_data)
-    recommender.get_similiar_latent_space(latent_space)
-
-
-
-        
-
-
-
-
+    recommender.get_similiar_latent_space(latent_space, 2)
     
-        
