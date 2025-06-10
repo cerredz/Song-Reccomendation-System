@@ -21,13 +21,20 @@ def embed_num_data(data):
     )    
     
     features = get_num_features() + ["Good For Meditation/Stretching"]
+    normalized_params = {}
+
     for feature in features:
         x_min = data[feature].min()
         x_max = data[feature].max()
+        normalized_params[feature] = {"min": int(x_min), "max": int(x_max)}
         if x_max == x_min:
             data[feature] = 0.0
         else:
             data[feature] = (data[feature] - x_min) / (x_max - x_min)
+
+    with open("../data/normalization-params.json", "w") as json_file:
+        json.dump(normalized_params, json_file, indent=4)
+
     return data
 
 # Process the non numerical features before training the data
@@ -86,9 +93,6 @@ def process_non_num_features(data):
         json.dump(emotion_mapping, json_file, indent=4)
 
     return data, artist_count, genre_count, emotion_count
-
-
-    
 
 def get_num_features():
     return [

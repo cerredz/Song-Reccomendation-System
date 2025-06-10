@@ -2,11 +2,13 @@ from models import load_saved_model
 import pandas as pd
 import sys
 import json
+import numpy as np
 
 class Recommender():
-    autoencoder, encoding_model = load_saved_model()
+    autoencoder, encoder_model = load_saved_model()
     latent_dict = {}
     age_dict = {}
+    normalized_params = {} # min/max values used for normalizing input
 
     def __init__(self):
         if not Recommender.latent_dict:
@@ -14,7 +16,9 @@ class Recommender():
 
         if not Recommender.age_dict:
             Recommender.age_dict = self.create_age_dict()
-            print(Recommender.age_dict)
+
+        if not Recommender.normalized_params:
+            Recommender.normalized_params = self.create_normalized_params()
 
     # Creates a lookup table based on our 32D latent space
     def create_latent_lookup_table(self):
@@ -61,9 +65,7 @@ class Recommender():
             
             table[latent_tuple] = metadata
         
-        print(f"Created lookup table with {len(table)} entries")
         return table
-    
 
     # creates the age (artist, genre, emotion) dict (corresponding values to each a.g.e we used during training)
     def create_age_dict(self):
@@ -82,15 +84,115 @@ class Recommender():
             age_dict["emotion"] = emotion_data
         
         return age_dict
+    
+    def create_normalized_params(self):
+        with open("../data/normalization-params.json") as json_file:
+            return json.load(json_file)
+    
+    def normalize_value(self, value, feature_name):
+        if value is None:
+            return 0.0
+        
+        params = Recommender.normalized_params.get(feature_name)
+        if not params:
+            return 0.0
+            
+        x_min = params["min"]
+        x_max = params["max"]
+        
+        if x_max == x_min:
+            return 0.0
+        else:
+            return (value - x_min) / (x_max - x_min)
 
-    # Recommends a certain number of songs based on the input
-    def recommend_song(self, n, data):
-        pass
+    # Generates a latent space on the user inputted data using the encoder model
+    def generate_latent_space(self, n, data):
+        
+        # process 17 numerical features of data (same column order as pre-processed-data.csv)
+        num_data = []
+        
+        feature_mapping = {
+            "tempo": "Tempo",
+            "popularity": "Popularity", 
+            "energy": "Energy",
+            "danceability": "Danceability",
+            "positiveness": "Positiveness",
+            "speechiness": "Speechiness",
+            "liveness": "Liveness",
+            "acousticness": "Acousticness",
+            "instrumentalness": "Instrumentalness",
+            "good_for_party": "Good for Party",
+            "good_for_work_study": "Good for Work/Study",
+            "good_for_exercise": "Good for Exercise",
+            "good_for_running": "Good for Running",
+            "good_for_driving": "Good for Driving",
+            "good_for_social_gatherings": "Good for Social Gatherings",
+            "good_for_morning_routine": "Good for Morning Routine",
+            "good_for_meditation_stretching": "Good For Meditation/Stretching"
+        }
+        
+        # Normalize each numerical feature
+        for input_key, feature_name in feature_mapping.items():
+            normalized_value = self.normalize_value(data.get(input_key), feature_name)
+            num_data.append(normalized_value)
+        
+        # process the non-numerical data
+        artist_value = 0 if data["artist"] is None else Recommender.age_dict["artist"].get(data["artist"].lower(), 0)
+        genre_value = 0 if data["genre"] is None else Recommender.age_dict["genre"].get(data["genre"].lower(), 0) 
+        emotion_value = 0 if data["emotion"] is None else Recommender.age_dict["emotion"].get(data["emotion"], 0)
 
+        print("num data", num_data)
 
+        # run the model with the properly formatted input data
+        num_data_array = np.array([num_data]) 
+        artist_array = np.array([artist_value])  
+        genre_array = np.array([genre_value])  
+        emotion_array = np.array([emotion_value])  
+        
+        predictions = Recommender.encoder_model.predict([num_data_array, artist_array, genre_array, emotion_array])
+
+        # return the 32d latent space
+        return predictions[0]
+    
+    # Find similiar latent spaces to a given latent space
+    def get_similiar_latent_space(self, latent_space):
+
+        for key, value in Recommender.latent_dict.items():
+            print(key)
+    
+    
 
 if __name__ == "__main__":
     recommender = Recommender()
+    
+    # Sample data for testing
+    sample_data = {
+        "tempo": 120.5,
+        "popularity": 75,
+        "energy": 0.8,
+        "danceability": 0.7,
+        "positiveness": 0.6,
+        "speechiness": 0.1,
+        "liveness": 0.2,
+        "acousticness": 0.3,
+        "instrumentalness": 0.05,
+        "good_for_party": 1,
+        "good_for_work_study": 0,
+        "good_for_exercise": 1,
+        "good_for_running": 1,
+        "good_for_driving": 0,
+        "good_for_social_gatherings": 1,
+        "good_for_morning_routine": 0,
+        "good_for_meditation_stretching": 0,
+        "artist": "Taylor Swift",
+        "genre": "pop",
+        "emotion": "happy"
+    }
+    
+    # Call the function
+    print("Testing generate_latent_space with sample data:")
+    latent_space = recommender.generate_latent_space(n=5, data=sample_data)
+    recommender.get_similiar_latent_space(latent_space)
 
 
 

@@ -73,9 +73,6 @@ def create_latent_lookup_table(n_rows=10000, batch_size=10000):
     latent_df.to_csv("../data/latent-space-lookup.csv", index=False)
 
 if __name__ == "__main__":
-    pd.set_option('display.max_rows', None)  
-    pd.set_option('display.max_columns', None)
-
     create_latent_lookup_table()
 
 
