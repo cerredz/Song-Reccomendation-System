@@ -50,7 +50,7 @@ The autoencoder model demonstrates excellent performance and meaningful latent s
 
 ### Training Results
 
-![Training History](visualizations/training.png)
+![Training History](visualizations/training/training.png)
 
 The training history shows:
 
@@ -61,7 +61,7 @@ The training history shows:
 
 ### Latent Space Visualization
 
-![Latent Space Visualization](visualizations/latent-space.png)
+![Latent Space Visualization](visualizations/training/latent-space.png)
 
 The t-SNE visualization of the 20-dimensional latent space expressed in 2 dimensions reveals:
 
