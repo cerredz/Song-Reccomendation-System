@@ -24,7 +24,7 @@ The model consists of an autoencoder with separate input paths for numerical and
   - Aims to minimize reconstruction loss (Mean Squared Error).
 - **Training**:
   - Trained on a kaggle dataset coming from https://www.kaggle.com/datasets/devdope/900k-spotify/data?select=spotify_dataset.csv of song data.
-  - Trained on a singular 4070-ti Super Geforce
+  - Trained on a singular 4070-ti Super Geforce gpu
 
 The system also includes a separate encoder model to map songs directly to the latent space for recommendation purposes.
 
@@ -37,14 +37,6 @@ The dataset used for training and evaluation is sourced from Spotify and include
 - **Latent Space Lookup**: `latent-space-lookup.csv` (239MB) - Stores the latent representations of songs for quick recommendation lookups.
 - **other .json files**: JSON files for artists, genres, and emotions IDS, along with normalization parameters and data counts.
 
-## Embedding Layers Information
-
-Embedding layers are crucial for handling categorical data in the model:
-
-- **Artist Embedding**: With a dimension of 100, it captures the unique characteristics of each artist across a large number of artists (as derived from `counts.csv`).
-- **Genre Embedding**: With a dimension of 50, it represents various music genres, allowing the model to understand genre similarities.
-- **Emotion Embedding**: With a dimension of 25, it encodes emotional attributes associated with songs, enhancing the personalization of recommendations.
-
 ## Additional Details
 
 - **Scripts**: The project includes scripts for data preprocessing (`data.py`), model definition and training (`autoencoder.py`), recommendation logic (`Recommender.py`), and visualization (`visualize.py`).
@@ -56,11 +48,43 @@ Embedding layers are crucial for handling categorical data in the model:
 
 To run this project locally:
 
-1. Clone the repository.
-2. Install dependencies listed in `requirements.txt`.
-3. Run data preprocessing scripts if necessary (`scripts/data.py`).
-4. Train the model using `scripts/autoencoder.py` or load pre-trained models from the `models` directory.
-5. Start the API server and frontend application for user interaction.
+1. **Clone the repository**:
+
+   ```bash
+   git clone https://github.com/yourusername/song-recommendation-system.git
+   cd song-recommendation-system
+   ```
+
+2. **Install dependencies** listed in `requirements.txt`:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Run data preprocessing scripts** if necessary (`scripts/data.py`):
+
+   ```bash
+   python scripts/data.py
+   ```
+
+4. **Train the model** using `scripts/autoencoder.py` or load pre-trained models from the `models` directory:
+
+   ```bash
+   python scripts/autoencoder.py
+   ```
+
+5. **Start the API server** and frontend application for user interaction:
+   - For the API server (assuming it's in the `api` directory and uses a framework like Flask or FastAPI):
+     ```bash
+     cd api
+     python app.py  # or the specific entry point file for your API
+     ```
+   - For the frontend application (assuming it's a Next.js app in the `next-app` directory):
+     ```bash
+     cd next-app
+     npm install  # Install frontend dependencies
+     npm run dev  # Start the development server
+     ```
 
 ## Contributing
 
