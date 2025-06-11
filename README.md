@@ -44,6 +44,37 @@ The dataset used for training and evaluation is sourced from Spotify and include
 - **API and Frontend**: The system is integrated with a backend API (`api` directory) and a Next.js frontend application (`next-app` directory) for user interaction.
 - **Model Storage**: Trained models are saved as `autoencoder-model.keras` and `encoder-model.keras` in the `models` directory for reuse.
 
+## Model Performance
+
+The autoencoder model demonstrates excellent performance and meaningful latent space representation, as evidenced by the training metrics and visualizations:
+
+### Training Results
+
+![Training History](visualizations/training.png)
+
+The training history shows:
+
+- **Convergence**: Both training and validation loss converge smoothly, indicating stable learning
+- **No Overfitting**: The validation loss closely follows the training loss without significant divergence
+- **Effective Learning**: Loss decreases from ~0.04 to ~0.001 over approximately 18 epochs
+- **Early Stopping**: The model benefits from early stopping to prevent overfitting, as shown in the overfitting check plot
+
+### Latent Space Visualization
+
+![Latent Space Visualization](visualizations/latent-space.png)
+
+The t-SNE visualization of the 20-dimensional latent space expressed in 2 dimensions reveals:
+
+- **Balanced Clustering**: Songs form clusters but not overly tight groupings, indicating the model has learned meaningful patterns without overfitting
+- **Mixed Representations**: Each cluster contains multiple colors across all three visualizations (genre, artist, emotion), demonstrating that the model avoids over-emphasizing any single categorical feature from the embedding layers
+- **Genre Clustering**: Songs are naturally grouped by genre (left panel) while maintaining diversity within clusters
+- **Artist Separation**: Clear artist-based clustering (middle panel) shows the model learns artist-specific characteristics without creating isolated artist-only groups
+- **Emotion Mapping**: Emotional attributes create meaningful patterns in the latent space (right panel) while preserving cross-emotional similarities
+
+This balanced clustering behavior is crucial for effective recommendations - it shows the autoencoder has learned to weight the embedding layers (artist, genre, emotion) appropriately without letting any single categorical feature dominate the latent representation. The presence of multiple colors within each cluster confirms the model captures nuanced musical relationships beyond simple categorical boundaries.
+
+These visualizations confirm that the autoencoder successfully learns meaningful representations that respect musical similarity across multiple dimensions (genre, artist, and emotion), making it highly effective for recommendation tasks.
+
 ## Installation and Usage
 
 To run this project locally:
@@ -81,7 +112,9 @@ python scripts/Latent-Space-Mapping.py
 
 ```
 
-6. **Start the API server** and frontend application for user interaction(optional):
+6. **Run the Recommender** using `scripts/Recommender.py` to get a song recommendation. Feel free to change data inside of the file
+
+7. **Start the API server** and frontend application for user interaction(optional):
    - For the API server (assuming it's in the `api` directory and uses a framework like Flask or FastAPI):
      ```bash
      python -m api.server
