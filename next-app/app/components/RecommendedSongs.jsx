@@ -45,10 +45,10 @@ export default function RecommendedSongs({ state }) {
     <AnimatePresence>
       {state.finished && recommendations.length > 0 && (
         <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -50 }}
-          transition={{ duration: 0.5 }}
+          initial={{ opacity: 0, y: 50, display: "none" }}
+          animate={{ opacity: 1, y: 0, display: "flex" }}
+          exit={{ opacity: 0, y: -50, display: "none" }}
+          transition={{ duration: 0.5, delay: 0.4 }}
           layout
           className="flex justify-center px-4 sm:px-8 relative z-10 py-8"
         >

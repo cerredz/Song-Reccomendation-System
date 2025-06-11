@@ -105,16 +105,14 @@ export default function SongForm({ state, setState }) {
     <AnimatePresence>
       {state.started && !state.finished && (
         <motion.div
-          initial={{ opacity: 0, y: 100 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -100 }}
-          transition={{ duration: 0.5 }}
-          className="flex items-center justify-center px-8 relative z-10 min-h-screen py-8 mb-16"
+          initial={{ opacity: 0, y: 100, display: "none" }}
+          animate={{ opacity: 1, y: 0, display: "block" }}
+          exit={{ opacity: 0, y: -100, display: "none" }}
+          layout
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="flex items-center justify-center px-8 relative z-10  py-8 mb-16"
         >
-          <form
-            onSubmit={handleSubmit}
-            className="w-full max-w-4xl bg-black/20 backdrop-blur-sm rounded-2xl p-8 border border-white/10 mt-96 translate-y-[100px]"
-          >
+          <form onSubmit={handleSubmit} className="w-full max-w-4xl bg-black/20 backdrop-blur-sm rounded-2xl p-8 border border-white/10 mt-32 ">
             <div className="text-center mb-8">
               <h1 className="font-primary text-4xl md:text-5xl font-bold text-white leading-tight mb-3">Find My Music</h1>
               <p className="text-white/50 text-sm tracking-wider">Tell us about your music preferences</p>

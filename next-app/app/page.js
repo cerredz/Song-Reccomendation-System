@@ -18,6 +18,7 @@ export default function Home() {
         <Image src="/images/center-glow-pink.png" alt="Background" fill className="object-cover" quality={100} priority />
       </div>
       {/* Conditional rendering based on state */}
+
       {!state.finished ? (
         // Show main text and form when not finished
         <div className="flex flex-col items-center justify-center min-h-screen">
