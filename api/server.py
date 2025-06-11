@@ -2,18 +2,15 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from scripts.Recommender import Recommender
 import numpy as np
 import heapq
 
 # Create a Flask application instance
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 recommender = Recommender()
-
-# Define a route for the home page
-@app.route('/')
-def hello_world():
-    return 'Hello, World!'
 
 @app.route("/recommend", methods=["POST"])
 def recommend_songs():
@@ -67,3 +64,4 @@ def recommend_songs():
 # Run the application if the script is executed directly
 if __name__ == '__main__':
     app.run(debug=True)
+    
