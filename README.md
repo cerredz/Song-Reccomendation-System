@@ -61,7 +61,7 @@ To run this project locally:
    pip install -r requirements.txt
    ```
 
-3. **Run data preprocessing scripts** if necessary (`scripts/data.py`):
+3. **Run data preprocessing scripts(Change amount of input data if necessary)** (`scripts/data.py`):
 
    ```bash
    python scripts/data.py
@@ -71,13 +71,20 @@ To run this project locally:
 
    ```bash
    python scripts/autoencoder.py
+
    ```
 
-5. **Start the API server** and frontend application for user interaction:
+5. **Save the latent spaces of the trained model** using `scripts/Latent-Space-Mapping.py` for constant time latent space lookups
+
+```bash
+python scripts/Latent-Space-Mapping.py
+
+```
+
+6. **Start the API server** and frontend application for user interaction(optional):
    - For the API server (assuming it's in the `api` directory and uses a framework like Flask or FastAPI):
      ```bash
-     cd api
-     python app.py  # or the specific entry point file for your API
+     python -m api.server
      ```
    - For the frontend application (assuming it's a Next.js app in the `next-app` directory):
      ```bash
