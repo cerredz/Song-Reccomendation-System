@@ -28,7 +28,7 @@ export default function Navbar({ state, setState }) {
         </div>
       </div>
       {/* Github Button */}
-      <Link href="https://github.com/cerredz/Song-Reccomendation-System">
+      <Link href="https://github.com/cerredz/Song-Reccomendation-System" target="_blank">
         <motion.button
           whileHover={{ opacity: 0.7 }}
           whileTap={{ scale: 0.98 }}
