@@ -1,6 +1,8 @@
-from models import load_saved_model
-import pandas as pd
 import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from scripts.models import load_saved_model
+import pandas as pd
 import json
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
@@ -25,8 +27,9 @@ class Recommender():
     # Creates a lookup table based on our 32D latent space
     def create_latent_lookup_table(self):
         table = {}
-
-        data = pd.read_csv("../data/latent-space-lookup.csv", delimiter=",") 
+        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+        data_path = os.path.join(project_root, 'data', 'latent-space-lookup.csv')
+        data = pd.read_csv(data_path, delimiter=',') 
         
         latent_cols = [f"latent_{i}" for i in range(20)]  
         latent_data = data[latent_cols].values 
@@ -70,23 +73,25 @@ class Recommender():
     # creates the age (artist, genre, emotion) dict (corresponding values to each a.g.e we used during training)
     def create_age_dict(self):
         age_dict = {}
+        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
-        with open("../data/artist-json.json") as json_file:
+        with open(os.path.join(project_root, 'data', 'artist-json.json')) as json_file:
             artist_data = json.load(json_file)
-            age_dict["artist"] = artist_data
+            age_dict['artist'] = artist_data
         
-        with open("../data/genre-json.json") as json_file:
+        with open(os.path.join(project_root, 'data', 'genre-json.json')) as json_file:
             genre_data = json.load(json_file)
-            age_dict["genre"] = genre_data
+            age_dict['genre'] = genre_data
         
-        with open("../data/emotion-json.json") as json_file:
+        with open(os.path.join(project_root, 'data', 'emotion-json.json')) as json_file:
             emotion_data = json.load(json_file)
-            age_dict["emotion"] = emotion_data
+            age_dict['emotion'] = emotion_data
         
         return age_dict
     
     def create_normalized_params(self):
-        with open("../data/normalization-params.json") as json_file:
+        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+        with open(os.path.join(project_root, 'data', 'normalization-params.json')) as json_file:
             return json.load(json_file)
     
     def normalize_value(self, value, feature_name):
