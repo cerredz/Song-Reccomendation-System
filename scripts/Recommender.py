@@ -152,28 +152,48 @@ class Recommender():
         # return the 32d latent space
         return predictions[0]
     
-    # Find similiar latent spaces to a given latent space
+    # Find similar latent spaces to a given latent space
     def get_similiar_latent_space(self, latent_space, n):
-        min_heap = []
+        # Convert latent_space to a NumPy array if it isn't already
+        latent_space = np.array(latent_space, dtype=np.float32)
         
-        for key, value in Recommender.latent_dict.items():
-            latent_key = [float(x) for x in key]
-            cosine_similarity_score = self.get_cosine_similiarity([latent_key], [latent_space])
+        # Extract all latent vectors and metadata from latent_dict
+        latent_keys = np.array([list(map(float, key)) for key in Recommender.latent_dict.keys()], dtype=np.float32)
+        metadata_list = list(Recommender.latent_dict.values())
+        
+        if latent_keys.shape[0] == 0:
+            return []
             
-            if cosine_similarity_score > 0.3:  # Only consider items above threshold
-                print(cosine_similarity_score)
-                if len(min_heap) < n:
-                    # Heap not full, just add the item
-                    heapq.heappush(min_heap, (cosine_similarity_score, value))
-                elif cosine_similarity_score > min_heap[0][0]:
-                    # New score is better than the worst in our top-n
-                    heapq.heapreplace(min_heap, (cosine_similarity_score, value))
+        # Compute cosine similarity for all vectors at once
+        # Cosine similarity = dot product / (norm of latent_space * norm of each key)
+        latent_space_norm = np.linalg.norm(latent_space)
+        keys_norms = np.linalg.norm(latent_keys, axis=1)
+        dot_products = np.dot(latent_keys, latent_space)
+        cosine_similarities = dot_products / (latent_space_norm * keys_norms)
         
-        # Convert heap to sorted list (highest scores first)
-        results = sorted(min_heap, key=lambda x: x[0], reverse=True)
+        # Filter by threshold
+        threshold = 0.9
+        mask = cosine_similarities > threshold
         
-        # Return as list of dictionaries with score and metadata
-        return [{"score": score, "metadata": metadata} for score, metadata in results]
+        # Get indices of vectors above threshold
+        valid_indices = np.where(mask)[0]
+        valid_similarities = cosine_similarities[valid_indices]
+        valid_metadata = [metadata_list[i] for i in valid_indices]
+        
+        if len(valid_indices) == 0:
+            return []
+            
+        # Get top n indices based on similarity scores
+        if len(valid_indices) <= n:
+            top_n_indices = np.arange(len(valid_indices))
+        else:
+            top_n_indices = np.argpartition(valid_similarities, -n)[-n:]
+            
+        # Sort the top n by similarity score (descending)
+        top_n_indices = top_n_indices[np.argsort(valid_similarities[top_n_indices])[::-1]]
+        
+        # Return results as list of dictionaries
+        return [{"score": valid_similarities[idx], "metadata": valid_metadata[idx]} for idx in top_n_indices]
 
     # Helper function, used to determine the cosine similiarity between two arrays
     def get_cosine_similiarity(self, x, y):
