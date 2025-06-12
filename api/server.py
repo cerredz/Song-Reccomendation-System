@@ -64,4 +64,7 @@ def recommend_songs():
 # Run the application if the script is executed directly
 if __name__ == '__main__':
     app.run(debug=True)
+
+# Export the app for Vercel serverless functions
+application = app
     

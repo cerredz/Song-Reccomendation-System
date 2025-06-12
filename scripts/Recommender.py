@@ -7,6 +7,16 @@ import json
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 import heapq
+import requests
+import shutil
+
+# Function to download file from URL
+def download_file(url, local_path):
+    os.makedirs(os.path.dirname(local_path), exist_ok=True)
+    with requests.get(url, stream=True) as r:
+        with open(local_path, 'wb') as f:
+            shutil.copyfileobj(r.raw, f)
+    return local_path
 
 class Recommender():
     autoencoder, encoder_model = load_saved_model()
@@ -15,6 +25,25 @@ class Recommender():
     normalized_params = {} # min/max values used for normalizing input
 
     def __init__(self):
+        # Define GitHub Release URLs (replace with actual URLs from your GitHub Release)
+        self.github_urls = {
+            'latent_space_lookup': 'https://github.com/cerredz/Song-Reccomendation-System/releases/download/v1.0.0/latent-space-lookup.csv',
+            'artist_json': 'https://github.com/cerredz/Song-Reccomendation-System/releases/download/v1.0.0/artist-json.json',
+            'genre_json': 'https://github.com/cerredz/Song-Reccomendation-System/releases/download/v1.0.0/genre-json.json',
+            'emotion_json': 'https://github.com/cerredz/Song-Reccomendation-System/releases/download/v1.0.0/emotion-json.json',
+            'normalization_params': 'https://github.com/cerredz/Song-Reccomendation-System/releases/download/v1.0.0/normalization-params.json',
+            'encoder_model': 'https://github.com/cerredz/Song-Reccomendation-System/releases/download/v1.0.0/encoder-model.keras'
+        }
+        # Define local temporary paths for serverless environment
+        self.local_paths = {
+            'latent_space_lookup': os.path.join('/tmp', 'data', 'latent-space-lookup.csv'),
+            'artist_json': os.path.join('/tmp', 'data', 'artist-json.json'),
+            'genre_json': os.path.join('/tmp', 'data', 'genre-json.json'),
+            'emotion_json': os.path.join('/tmp', 'data', 'emotion-json.json'),
+            'normalization_params': os.path.join('/tmp', 'data', 'normalization-params.json'),
+            'encoder_model': os.path.join('/tmp', 'models', 'encoder-model.keras')
+        }
+        
         if not Recommender.latent_dict:
             Recommender.latent_dict = self.create_latent_lookup_table()
 
@@ -24,11 +53,19 @@ class Recommender():
         if not Recommender.normalized_params:
             Recommender.normalized_params = self.create_normalized_params()
 
+    # Download files if not present locally
+    def ensure_file(self, key):
+        local_path = self.local_paths.get(key)
+        if not os.path.exists(local_path):
+            url = self.github_urls.get(key)
+            print(f'Downloading {key} from {url} to {local_path}')
+            download_file(url, local_path)
+        return local_path
+
     # Creates a lookup table based on our 32D latent space
     def create_latent_lookup_table(self):
         table = {}
-        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-        data_path = os.path.join(project_root, 'data', 'latent-space-lookup.csv')
+        data_path = self.ensure_file('latent_space_lookup')
         data = pd.read_csv(data_path, delimiter=',') 
         
         latent_cols = [f"latent_{i}" for i in range(20)]  
@@ -73,25 +110,27 @@ class Recommender():
     # creates the age (artist, genre, emotion) dict (corresponding values to each a.g.e we used during training)
     def create_age_dict(self):
         age_dict = {}
-        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
-        with open(os.path.join(project_root, 'data', 'artist-json.json')) as json_file:
+        artist_path = self.ensure_file('artist_json')
+        with open(artist_path) as json_file:
             artist_data = json.load(json_file)
             age_dict['artist'] = artist_data
         
-        with open(os.path.join(project_root, 'data', 'genre-json.json')) as json_file:
+        genre_path = self.ensure_file('genre_json')
+        with open(genre_path) as json_file:
             genre_data = json.load(json_file)
             age_dict['genre'] = genre_data
         
-        with open(os.path.join(project_root, 'data', 'emotion-json.json')) as json_file:
+        emotion_path = self.ensure_file('emotion_json')
+        with open(emotion_path) as json_file:
             emotion_data = json.load(json_file)
             age_dict['emotion'] = emotion_data
         
         return age_dict
     
     def create_normalized_params(self):
-        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-        with open(os.path.join(project_root, 'data', 'normalization-params.json')) as json_file:
+        params_path = self.ensure_file('normalization_params')
+        with open(params_path) as json_file:
             return json.load(json_file)
     
     def normalize_value(self, value, feature_name):
