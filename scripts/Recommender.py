@@ -13,11 +13,26 @@ import csv
 
 # Function to download file from URL
 def download_file(url, local_path):
-    os.makedirs(os.path.dirname(local_path), exist_ok=True)
-    with requests.get(url, stream=True) as r:
+    try:
+        os.makedirs(os.path.dirname(local_path), exist_ok=True)
+        print(f"Downloading from {url} to {local_path}")
+        
+        response = requests.get(url, stream=True, timeout=300)  # 5 minute timeout
+        response.raise_for_status()  # Raise an exception for bad status codes
+        
         with open(local_path, 'wb') as f:
-            shutil.copyfileobj(r.raw, f)
-    return local_path
+            shutil.copyfileobj(response.raw, f)
+        
+        # Verify file was created and has content
+        if os.path.exists(local_path) and os.path.getsize(local_path) > 0:
+            print(f"Successfully downloaded {local_path} ({os.path.getsize(local_path)} bytes)")
+            return local_path
+        else:
+            raise Exception(f"Download failed: file {local_path} is empty or doesn't exist")
+            
+    except Exception as e:
+        print(f"Error downloading {url}: {str(e)}")
+        raise e
 
 def read_csv_without_pandas(file_path):
     data = []
@@ -33,12 +48,18 @@ def read_csv_without_pandas(file_path):
     return headers, data
 
 class Recommender():
-    autoencoder, encoder_model = load_saved_model()
+    autoencoder = None
+    encoder_model = None
     latent_dict = {}
     age_dict = {}
     normalized_params = {} # min/max values used for normalizing input
 
     def __init__(self):
+        # Load models during initialization, not at class definition
+        if Recommender.autoencoder is None or Recommender.encoder_model is None:
+            print("Loading TensorFlow models...")
+            Recommender.autoencoder, Recommender.encoder_model = load_saved_model()
+            print("Models loaded successfully!")
         # Define GitHub Release URLs (replace with actual URLs from your GitHub Release)
         self.github_urls = {
             'latent_space_lookup': 'https://github.com/cerredz/Song-Reccomendation-System/releases/download/v1.0.0/latent-space-lookup.csv',

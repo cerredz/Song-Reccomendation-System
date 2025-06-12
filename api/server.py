@@ -67,8 +67,9 @@ def recommend_songs():
 
 # Run the application if the script is executed directly
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
 
-# Export the app for Vercel serverless functions
+# Export the app for Render/gunicorn
 application = app
     

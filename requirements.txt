@@ -7,5 +7,4 @@ scikit-learn
 flask
 flask-cors
 requests
-serverless-wsgi
 gunicorn
