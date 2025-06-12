@@ -9,6 +9,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 import heapq
 import requests
 import shutil
+import csv
 
 # Function to download file from URL
 def download_file(url, local_path):
@@ -17,6 +18,19 @@ def download_file(url, local_path):
         with open(local_path, 'wb') as f:
             shutil.copyfileobj(r.raw, f)
     return local_path
+
+def read_csv_without_pandas(file_path):
+    data = []
+    headers = []
+    
+    with open(file_path, 'r', encoding='utf-8') as file:
+        csv_reader = csv.reader(file)
+        headers = next(csv_reader)  # Get headers
+        
+        for row in csv_reader:
+            data.append(row)
+    
+    return headers, data
 
 class Recommender():
     autoencoder, encoder_model = load_saved_model()
@@ -66,44 +80,26 @@ class Recommender():
     def create_latent_lookup_table(self):
         table = {}
         data_path = self.ensure_file('latent_space_lookup')
-        data = pd.read_csv(data_path, delimiter=',') 
         
-        latent_cols = [f"latent_{i}" for i in range(20)]  
-        latent_data = data[latent_cols].values 
+        # Read CSV without pandas
+        headers, rows = read_csv_without_pandas(data_path)
         
-        # Create tuples from each row (vectorized)
-        latent_tuples = [tuple(row) for row in latent_data]
+        # Find latent column indices
+        latent_indices = [i for i, header in enumerate(headers) if header.startswith('latent_')]
         
-        # Extract all metadata at once
-        metadata_list = data[[
-            "Artist(s)", "Genre", "song", "Length", "Album", "Release Date",
-            "Similar Artist 1", "Similar Song 1", "Similarity Score 1",
-            "Similar Artist 2", "Similar Song 2", "Similarity Score 2", 
-            "Similar Artist 3", "Similar Song 3", "Similarity Score 3"
-        ]].to_dict('records')  # Convert to list of dictionaries
-        
-        # Create the lookup table using zip (much faster than loop)
-        for latent_tuple, metadata_row in zip(latent_tuples, metadata_list):
-            # Clean up the metadata keys (remove special characters if needed)
+        for row in rows:
+            # Extract latent values
+            latent_values = tuple(float(row[i]) for i in latent_indices)
+            
+            # Extract metadata
             metadata = {
-                "artist": metadata_row["Artist(s)"],
-                "genre": metadata_row["Genre"],
-                "song": metadata_row["song"],
-                "length": metadata_row["Length"],
-                "album": metadata_row["Album"],
-                "release_date": metadata_row["Release Date"],
-                "similar_artist_1": metadata_row["Similar Artist 1"],
-                "similar_song_1": metadata_row["Similar Song 1"],
-                "similarity_score_1": metadata_row["Similarity Score 1"],
-                "similar_artist_2": metadata_row["Similar Artist 2"],
-                "similar_song_2": metadata_row["Similar Song 2"],
-                "similarity_score_2": metadata_row["Similarity Score 2"],
-                "similar_artist_3": metadata_row["Similar Artist 3"],
-                "similar_song_3": metadata_row["Similar Song 3"],
-                "similarity_score_3": metadata_row["Similarity Score 3"]
+                "artist": row[headers.index("Artist(s)")],
+                "genre": row[headers.index("Genre")],
+                "song": row[headers.index("song")],
+                # ... add other fields as needed
             }
             
-            table[latent_tuple] = metadata
+            table[latent_values] = metadata
         
         return table
 

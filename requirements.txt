@@ -1,7 +1,7 @@
 pandas
 matplotlib
 seaborn
-tensorflow
+tensorflow-cpu
 numpy
 scikit-learn
 flask
