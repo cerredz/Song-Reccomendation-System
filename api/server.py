@@ -12,6 +12,10 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 recommender = Recommender()
 
+@app.route("/")
+def home():
+    return "Hello, World!"
+
 @app.route("/recommend", methods=["POST"])
 def recommend_songs():
     try:
