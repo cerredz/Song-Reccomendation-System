@@ -1,6 +1,6 @@
 secrets.txt
 data
-models/autoencoder-model.keras
-models/encoding-model.keras
+models
+models
 
 .vercel
