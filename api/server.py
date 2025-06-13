@@ -26,7 +26,7 @@ def get_recommender():
 def home():
     return "Hello, World!"
 
-@app.route("/recommend", methods=["POST"])
+@app.route("/recommend", methods=["POST", "GET"])
 def recommend_songs():
     try:
         print("Recommending a song based on user data...")
