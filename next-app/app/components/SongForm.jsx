@@ -72,6 +72,11 @@ export default function SongForm({ state, setState }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const baseUrl = process.env.NODE_ENV === "development" ? "http://localhost:5000" : "https://song-reccomendation-system.onrender.com";
+
+    // Debug logging
+    console.log("Form submitted with data:", formData);
+    console.log("Making POST request to:", `${baseUrl}/recommend`);
+
     setState({ ...state, loading: true });
     try {
       const response = await fetch(`${baseUrl}/recommend`, {
