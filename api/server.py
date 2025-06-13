@@ -10,7 +10,17 @@ import heapq
 # Create a Flask application instance
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
-recommender = Recommender()
+
+# Lazy load the recommender to avoid initialization during import
+recommender = None
+
+def get_recommender():
+    global recommender
+    if recommender is None:
+        print("Initializing recommender for the first time...")
+        recommender = Recommender()
+        print("Recommender initialized successfully!")
+    return recommender
 
 @app.route("/")
 def home():
@@ -22,20 +32,17 @@ def recommend_songs():
         print("Recommending a song based on user data...")
         data = request.get_json()
         
-        # extract all of the user's favorite songs via artist, genre, and emotion
-        artists = np.array(data.get("artist"))
-        genres = np.array(data.get("genre"))
-        emotions = np.array(data.get("emotion"))
-
-        similar_songs = []
+        # Get the recommender instance (lazy loaded)
+        rec = get_recommender()
+        
         n = data.get('n', 5)
     
         # Generate the latent space for this combination
-        latent_space = recommender.generate_latent_space(n, data)
+        latent_space = rec.generate_latent_space(n, data)
         print("Generated the latent space for user.")
 
         # Get similar latent spaces
-        similar_songs = recommender.get_similiar_latent_space(latent_space, n)
+        similar_songs = rec.get_similiar_latent_space(latent_space, n)
 
         if similar_songs:
             print("Successfully retrieved similiar songs for user")
